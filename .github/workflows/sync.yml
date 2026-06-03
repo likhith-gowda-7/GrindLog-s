@@ -1,0 +1,45 @@
+name: 🔄 Sync LeetCode Solutions
+
+on:
+  # Run every 6 hours
+  schedule:
+    - cron: '0 */6 * * *'
+  # Allow manual trigger
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    name: Sync LeetCode Solutions
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 📚 Install dependencies
+        run: npm ci
+
+      - name: 🔄 Sync new submissions
+        run: node src/cli.js sync
+        env:
+          LEETCODE_SESSION: ${{ secrets.LEETCODE_SESSION }}
+          LEETCODE_CSRF_TOKEN: ${{ secrets.LEETCODE_CSRF_TOKEN }}
+          LEETCODE_USERNAME: ${{ secrets.LEETCODE_USERNAME }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+
+      - name: 📤 Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: '🔄 Auto-sync LeetCode submissions'
+          file_pattern: 'output/**'
+          commit_user_name: 'GrindLog Bot'
+          commit_user_email: 'grindlog[bot]@users.noreply.github.com'
+          commit_author: 'GrindLog Bot <grindlog[bot]@users.noreply.github.com>'

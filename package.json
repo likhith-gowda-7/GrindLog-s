@@ -1,0 +1,37 @@
+{
+  "name": "grindlog",
+  "version": "1.0.0",
+  "description": "Automatically sync your LeetCode practice to a professionally structured GitHub repository",
+  "main": "src/cli.js",
+  "type": "module",
+  "bin": {
+    "grindlog": "./src/cli.js"
+  },
+  "scripts": {
+    "start": "node src/cli.js",
+    "setup": "node src/cli.js setup",
+    "sync": "node src/cli.js sync",
+    "import": "node src/cli.js import",
+    "stats": "node src/cli.js stats"
+  },
+  "keywords": [
+    "leetcode",
+    "github",
+    "automation",
+    "dsa",
+    "competitive-programming"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.0",
+    "chalk": "^5.3.0",
+    "commander": "^13.1.0",
+    "conf": "^13.1.0",
+    "node-fetch": "^3.3.2",
+    "openai": "^6.41.0",
+    "ora": "^8.2.0",
+    "p-limit": "^6.2.0",
+    "simple-git": "^3.27.0"
+  }
+}

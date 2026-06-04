@@ -4,3 +4,9 @@ config.json
 output/
 !output/.gitkeep
 *.log
+
+# Encrypted session storage (never commit)
+.grindlog/
+session.enc
+keys.enc
+.salt

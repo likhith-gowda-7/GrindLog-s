@@ -3,7 +3,7 @@ import fs from 'fs/promises';
 import { existsSync, mkdirSync, readdirSync, statSync } from 'fs';
 import { Explainer } from '../ai/explainer.js';
 import { Logger } from '../utils/logger.js';
-import { loadConfig } from '../utils/config.js';
+import { loadConfig, getFullCredentials } from '../utils/config.js';
 import { readFile, writeFile, ensureDir, topicFolderName, problemFolderName } from '../utils/file-helpers.js';
 
 /**
@@ -20,20 +20,21 @@ import { readFile, writeFile, ensureDir, topicFolderName, problemFolderName } fr
  */
 async function addExplanations(options = {}) {
   const config = await loadConfig();
+  const creds = getFullCredentials(config);
   const { limit = 0, dryRun = false } = options;
   const outputDir = config.github.outputDir;
 
   Logger.header('GrindLog — Add AI Explanations');
 
-  // Setup AI explainer
+  // Setup AI explainer (keys from encrypted storage)
   const cacheDir = path.join(outputDir, '.cache', 'explanations');
   ensureDir(cacheDir);
 
   const explainer = new Explainer({
-    provider: config.ai.provider,
-    geminiApiKey: config.ai.geminiApiKey,
-    openaiApiKey: config.ai.openaiApiKey,
-    groqApiKey: config.ai.groqApiKey,
+    provider: creds.ai.provider,
+    geminiApiKey: creds.ai.geminiApiKey,
+    openaiApiKey: creds.ai.openaiApiKey,
+    groqApiKey: creds.ai.groqApiKey,
     cacheDir,
   });
 
@@ -41,7 +42,7 @@ async function addExplanations(options = {}) {
     Logger.error('AI is not configured. Run `grindlog setup` and provide an API key.');
     return;
   }
-  Logger.success(`AI provider: ${config.ai.provider}`);
+  Logger.success(`AI provider: ${creds.ai.provider}`);
 
   // Collect all problem folders (deduplicated by problem ID — only process primary)
   const problems = [];

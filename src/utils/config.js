@@ -2,6 +2,7 @@ import fs from 'fs/promises';
 import { existsSync, mkdirSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { SessionManager } from '../auth/session-manager.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,26 +25,24 @@ function getDefaultOutputDir() {
 /**
  * Load configuration from config.json.
  * Returns defaults if file doesn't exist.
+ *
+ * NOTE: Sensitive data (session, API keys) are stored in encrypted
+ * storage via SessionManager, NOT in config.json.
  */
 async function loadConfig() {
   const configPath = getConfigPath();
   const defaults = {
     leetcode: {
       username: 'D_M_Likhith',
-      session: '',
-      csrfToken: '',
     },
     github: {
-      repoName: 'GrindLog-s',
-      repoUrl: 'https://github.com/likhith-gowda-7/GrindLog-s',
+      repoName: 'Leetcode_Solutions-GrindLog-s',
+      repoUrl: 'https://github.com/likhith-gowda-7/Leetcode_Solutions-GrindLog-s',
       githubUsername: 'likhith-gowda-7',
       outputDir: getDefaultOutputDir(),
     },
     ai: {
       provider: 'groq',
-      geminiApiKey: '',
-      openaiApiKey: '',
-      groqApiKey: '',
     },
     sync: {
       lastSyncTimestamp: null,
@@ -62,7 +61,19 @@ async function loadConfig() {
     if (existsSync(configPath)) {
       const raw = await fs.readFile(configPath, 'utf-8');
       const loaded = JSON.parse(raw);
-      // Deep merge with defaults
+
+      // Check for and handle legacy config migration
+      if (loaded.leetcode?.session || loaded.ai?.groqApiKey || loaded.ai?.geminiApiKey) {
+        const migrated = SessionManager.migrateFromLegacyConfig(loaded);
+        if (migrated) {
+          // Strip sensitive fields and save cleaned config
+          const cleaned = stripSensitiveFields(loaded);
+          await fs.writeFile(configPath, JSON.stringify(cleaned, null, 2), 'utf-8');
+        }
+        // Return merged config with sensitive fields stripped
+        return deepMerge(defaults, stripSensitiveFields(loaded));
+      }
+
       return deepMerge(defaults, loaded);
     }
   } catch {
@@ -74,10 +85,35 @@ async function loadConfig() {
 
 /**
  * Save configuration to config.json.
+ * ONLY saves non-sensitive data. Sessions and keys go to encrypted storage.
  */
 async function saveConfig(config) {
   const configPath = getConfigPath();
-  await fs.writeFile(configPath, JSON.stringify(config, null, 2), 'utf-8');
+  const cleaned = stripSensitiveFields(config);
+  await fs.writeFile(configPath, JSON.stringify(cleaned, null, 2), 'utf-8');
+}
+
+/**
+ * Strip sensitive fields from a config object.
+ * These belong in encrypted storage, not in config.json.
+ */
+function stripSensitiveFields(config) {
+  const stripped = JSON.parse(JSON.stringify(config));
+
+  // Remove session data
+  if (stripped.leetcode) {
+    delete stripped.leetcode.session;
+    delete stripped.leetcode.csrfToken;
+  }
+
+  // Remove API keys
+  if (stripped.ai) {
+    delete stripped.ai.groqApiKey;
+    delete stripped.ai.geminiApiKey;
+    delete stripped.ai.openaiApiKey;
+  }
+
+  return stripped;
 }
 
 /**
@@ -103,24 +139,50 @@ function deepMerge(target, source) {
 
 /**
  * Validate that essential config fields are present.
+ * NOTE: Session validation is handled separately by SessionManager.
  * Returns an array of missing field descriptions.
  */
 function validateConfig(config) {
   const missing = [];
   if (!config.leetcode.username) missing.push('LeetCode username');
-  if (!config.leetcode.session) missing.push('LeetCode session cookie');
-  if (!config.leetcode.csrfToken) missing.push('LeetCode CSRF token');
   return missing;
 }
 
 /**
- * Check if AI is configured.
+ * Check if AI is configured (keys in encrypted storage).
  */
 function isAIConfigured(config) {
-  if (config.ai.provider === 'gemini' && config.ai.geminiApiKey) return true;
-  if (config.ai.provider === 'openai' && config.ai.openaiApiKey) return true;
-  if (config.ai.provider === 'groq' && config.ai.groqApiKey) return true;
+  const keys = SessionManager.loadApiKeys();
+  if (config.ai.provider === 'groq' && keys.groqApiKey) return true;
+  if (config.ai.provider === 'gemini' && keys.geminiApiKey) return true;
+  if (config.ai.provider === 'openai' && keys.openaiApiKey) return true;
   return false;
+}
+
+/**
+ * Get session credentials for API usage.
+ * Loads from encrypted storage + adds to a config-like object.
+ * @param {object} config - The loaded config
+ * @returns {object} Config-like object with session and keys merged in
+ */
+function getFullCredentials(config) {
+  const session = SessionManager.loadSession();
+  const keys = SessionManager.loadApiKeys();
+
+  return {
+    ...config,
+    leetcode: {
+      ...config.leetcode,
+      session: session?.session || '',
+      csrfToken: session?.csrfToken || '',
+    },
+    ai: {
+      ...config.ai,
+      groqApiKey: keys.groqApiKey || '',
+      geminiApiKey: keys.geminiApiKey || '',
+      openaiApiKey: keys.openaiApiKey || '',
+    },
+  };
 }
 
 export {
@@ -130,5 +192,6 @@ export {
   isAIConfigured,
   getConfigPath,
   getDefaultOutputDir,
+  getFullCredentials,
   PROJECT_ROOT,
 };

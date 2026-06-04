@@ -16,30 +16,30 @@ import {
   listDirs,
   listFiles,
 } from '../utils/file-helpers.js';
-import { loadConfig, saveConfig } from '../utils/config.js';
+import { loadConfig, saveConfig, getFullCredentials } from '../utils/config.js';
 
 /**
  * Incremental sync — fetches only NEW submissions since last sync.
- * This is what runs every 6 hours via GitHub Actions or manually.
  */
 async function syncNew(options = {}) {
   const config = await loadConfig();
+  const creds = getFullCredentials(config);
   const { push = false } = options;
 
   Logger.header('GrindLog — Sync');
 
-  // Initialize client
+  // Initialize client (session from encrypted storage)
   const client = new LeetCodeClient({
-    username: config.leetcode.username,
-    session: config.leetcode.session,
-    csrfToken: config.leetcode.csrfToken,
+    username: creds.leetcode.username,
+    session: creds.leetcode.session,
+    csrfToken: creds.leetcode.csrfToken,
   });
 
   // Test connection
   const profile = await client.fetchProfile();
   if (!profile) {
-    Logger.error('Failed to connect to LeetCode. Your cookies may have expired.');
-    Logger.info('Run `grindlog setup` to refresh cookies.');
+    Logger.error('Failed to connect to LeetCode. Session may have expired.');
+    Logger.info('Run `grindlog auth` to refresh your session.');
     process.exit(1);
   }
   Logger.success(`Connected as: ${profile.username}`);
@@ -72,16 +72,16 @@ async function syncNew(options = {}) {
   const outputDir = config.github.outputDir;
   ensureDir(outputDir);
 
-  // Setup AI explainer
+  // Setup AI explainer (keys from encrypted storage)
   let explainer = null;
-  if (config.ai.geminiApiKey || config.ai.openaiApiKey) {
+  if (creds.ai.geminiApiKey || creds.ai.openaiApiKey || creds.ai.groqApiKey) {
     const cacheDir = path.join(outputDir, '.cache', 'explanations');
     ensureDir(cacheDir);
     explainer = new Explainer({
-      provider: config.ai.provider,
-      geminiApiKey: config.ai.geminiApiKey,
-      openaiApiKey: config.ai.openaiApiKey,
-      groqApiKey: config.ai.groqApiKey,
+      provider: creds.ai.provider,
+      geminiApiKey: creds.ai.geminiApiKey,
+      openaiApiKey: creds.ai.openaiApiKey,
+      groqApiKey: creds.ai.groqApiKey,
       cacheDir,
     });
     if (!explainer.isReady()) explainer = null;

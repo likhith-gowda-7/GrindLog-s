@@ -6,7 +6,7 @@ import { Explainer } from '../ai/explainer.js';
 import { GitRepo } from '../github/repo.js';
 import { Logger } from '../utils/logger.js';
 import { writeFile, readFile, fileExists, ensureDir, problemFolderName, topicFolderName, langExtension } from '../utils/file-helpers.js';
-import { loadConfig, saveConfig } from '../utils/config.js';
+import { loadConfig, saveConfig, getFullCredentials } from '../utils/config.js';
 
 /**
  * Import ALL past accepted submissions from LeetCode.
@@ -21,23 +21,25 @@ import { loadConfig, saveConfig } from '../utils/config.js';
  */
 async function importAll(options = {}) {
   const config = await loadConfig();
+  const creds = getFullCredentials(config);
   const { dryRun = false, skipAI = false, limit = 0 } = options;
 
   Logger.header('GrindLog — Full Import');
 
-  // Step 1: Initialize client
+  // Step 1: Initialize client (session from encrypted storage)
   Logger.info('Connecting to LeetCode...');
   const client = new LeetCodeClient({
-    username: config.leetcode.username,
-    session: config.leetcode.session,
-    csrfToken: config.leetcode.csrfToken,
+    username: creds.leetcode.username,
+    session: creds.leetcode.session,
+    csrfToken: creds.leetcode.csrfToken,
     rateLimitMs: 700,
   });
 
   // Test connection
   const profile = await client.fetchProfile();
   if (!profile) {
-    Logger.error('Failed to connect to LeetCode. Check your cookies.');
+    Logger.error('Failed to connect to LeetCode. Session may have expired.');
+    Logger.info('Run `grindlog auth` to refresh your session.');
     return;
   }
   Logger.success(`Connected as: ${profile.username}`);
@@ -82,16 +84,16 @@ async function importAll(options = {}) {
   const outputDir = config.github.outputDir;
   ensureDir(outputDir);
 
-  // Setup AI explainer
+  // Setup AI explainer (keys from encrypted storage)
   let explainer = null;
-  if (!skipAI && config.ai.geminiApiKey) {
+  if (!skipAI && (creds.ai.groqApiKey || creds.ai.geminiApiKey || creds.ai.openaiApiKey)) {
     const cacheDir = path.join(outputDir, '.cache', 'explanations');
     ensureDir(cacheDir);
     explainer = new Explainer({
-      provider: config.ai.provider,
-      geminiApiKey: config.ai.geminiApiKey,
-      openaiApiKey: config.ai.openaiApiKey,
-      groqApiKey: config.ai.groqApiKey,
+      provider: creds.ai.provider,
+      geminiApiKey: creds.ai.geminiApiKey,
+      openaiApiKey: creds.ai.openaiApiKey,
+      groqApiKey: creds.ai.groqApiKey,
       cacheDir,
     });
     if (explainer.isReady()) {

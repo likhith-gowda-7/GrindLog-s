@@ -1,7 +1,7 @@
 {
   "name": "grindlog",
-  "version": "1.0.0",
-  "description": "Automatically sync your LeetCode practice to a professionally structured GitHub repository",
+  "version": "2.0.0",
+  "description": "Securely sync your LeetCode solutions to a professionally structured GitHub repository",
   "main": "src/cli.js",
   "type": "module",
   "bin": {
@@ -10,8 +10,11 @@
   "scripts": {
     "start": "node src/cli.js",
     "setup": "node src/cli.js setup",
+    "auth": "node src/cli.js auth",
+    "doctor": "node src/cli.js doctor",
     "sync": "node src/cli.js sync",
     "import": "node src/cli.js import",
+    "explain": "node src/cli.js explain",
     "stats": "node src/cli.js stats"
   },
   "keywords": [
@@ -19,9 +22,10 @@
     "github",
     "automation",
     "dsa",
-    "competitive-programming"
+    "competitive-programming",
+    "developer-tools"
   ],
-  "author": "",
+  "author": "Likhith D M",
   "license": "MIT",
   "dependencies": {
     "@google/generative-ai": "^0.24.0",
@@ -32,6 +36,7 @@
     "openai": "^6.41.0",
     "ora": "^8.2.0",
     "p-limit": "^6.2.0",
+    "puppeteer-core": "^24.9.0",
     "simple-git": "^3.27.0"
   }
 }

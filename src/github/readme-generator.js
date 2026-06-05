@@ -18,8 +18,6 @@ function generateMainReadme(submissions, config) {
   const sections = [
     generateHeader(lcUsername, ghUsername, repoName, stats),
     generateBadges(stats, lcUsername),
-    generateStatsSection(stats),
-    generateTopicCoverage(topicGroups),
     generateRecentActivity(sorted),
     generateProblemIndex(sorted),
     generateFooter(ghUsername, repoName),

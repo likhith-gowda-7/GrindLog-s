@@ -120,6 +120,7 @@ sequenceDiagram
 | `importer.js` | Full history import (all solved problems) |
 | `syncer.js` | Incremental sync (new submissions only) |
 | `explain.js` | AI explanation batch generation |
+| `auto-sync.js` | Standalone script for scheduled auto-sync (Windows Task Scheduler) |
 
 **Import strategy:**
 1. Fetch ALL solved problem slugs via paginated API
@@ -173,6 +174,45 @@ stateDiagram-v2
     APICall --> Expired: 403 Forbidden
     Timeout --> [*]: User cancelled
 ```
+
+---
+
+## C.1 Auto-Sync Architecture
+
+GrindLog uses **Windows Task Scheduler** for automated syncing instead of GitHub Actions. This keeps all credentials local.
+
+```mermaid
+sequenceDiagram
+    participant TS as Task Scheduler
+    participant AS as auto-sync.js
+    participant SM as Session Manager
+    participant LC as LeetCode API
+    participant GH as GitHub
+
+    TS->>AS: Trigger (every 6h)
+    AS->>SM: Check session validity
+
+    alt Session Valid
+        SM-->>AS: Valid (~N days remaining)
+        AS->>LC: Fetch new submissions
+        LC-->>AS: Submission data
+        AS->>AS: Write files + commit
+        AS->>GH: git push
+        AS->>AS: Log to sync.log
+    end
+
+    alt Session Expired
+        SM-->>AS: Expired
+        AS->>AS: Log warning + skip
+        Note right of AS: User runs grindlog auth later
+    end
+```
+
+**Key design decisions:**
+- Auto-sync **cannot** open a browser (runs in background) — if session expires, it skips gracefully
+- All results logged to `sync.log` for troubleshooting
+- Uses the same `syncNew()` function as manual `grindlog sync`
+- `auto-sync.bat` wrapper handles the apostrophe in the directory path
 
 ---
 

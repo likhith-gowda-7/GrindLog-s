@@ -50,7 +50,8 @@ GrindLog-s/
 │   ├── sync/                  # Synchronization logic
 │   │   ├── importer.js        # Full history import
 │   │   ├── syncer.js          # Incremental sync
-│   │   └── explain.js         # AI explanation batch
+│   │   ├── explain.js         # AI explanation batch
+│   │   └── auto-sync.js       # Scheduled auto-sync script
 │   ├── utils/                 # Utilities
 │   │   ├── config.js          # Configuration management
 │   │   ├── file-helpers.js    # File system utilities

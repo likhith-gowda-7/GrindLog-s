@@ -121,6 +121,22 @@ GrindLog's CI/CD pipeline does **NOT** perform authenticated session automation.
 
 Session synchronization is always **LOCAL to your machine**.
 
+## Auto-Sync Safety
+
+GrindLog uses **Windows Task Scheduler** (not GitHub Actions) for automated syncing every 6 hours.
+
+**Why local instead of cloud?**
+- GitHub Actions would require storing live session cookies in GitHub Secrets
+- Those cookies expire every ~14 days, requiring manual updates
+- Secrets stored in the cloud increase the attack surface
+- Local Task Scheduler uses your encrypted session — nothing leaves your machine
+
+**How auto-sync handles expired sessions:**
+- Auto-sync **cannot** open a browser (it runs in the background)
+- If the session has expired, it **skips gracefully** and logs a warning
+- You then run `grindlog auth` manually to refresh (opens a visible browser)
+- Auto-sync resumes on the next 6-hour cycle
+
 ## Trust Boundaries
 
 ```

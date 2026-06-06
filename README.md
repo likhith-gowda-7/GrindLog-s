@@ -157,6 +157,56 @@ graph TD
 
 ---
 
+## ⏰ Auto-Sync (Every 6 Hours)
+
+GrindLog uses **Windows Task Scheduler** to automatically sync your solutions every 6 hours — no cloud secrets required.
+
+### How It Works
+
+```
+Task Scheduler (every 6h)
+    ↓
+auto-sync.bat → node src/auto-sync.js
+    ↓
+Check session → Fetch new submissions → Commit & Push
+    ↓
+Results logged to sync.log
+```
+
+### Setup (Automatic)
+
+The Task Scheduler job is created during setup. To verify it's running:
+
+```bash
+# Check the task exists
+schtasks /query /tn "GrindLog Auto-Sync"
+
+# Run it manually
+node src/auto-sync.js
+
+# View sync logs
+type sync.log
+```
+
+### Manual Setup (If Needed)
+
+```bash
+schtasks /create /tn "GrindLog Auto-Sync" /tr "cmd /c \"path\to\GrindLog\auto-sync.bat\"" /sc hourly /mo 6 /st 00:00 /f
+```
+
+> **Note:** Your PC needs to be on for auto-sync. If it's off at the scheduled time, Windows will run it the next time you're online.
+
+### Why Local Instead of GitHub Actions?
+
+| | GitHub Actions (old) | Task Scheduler (current) |
+|---|---|---|
+| **Cookies** | Stored in GitHub Secrets | Encrypted locally (AES-256-GCM) |
+| **Expiry** | Manual GitHub Secrets update | `grindlog auth` (browser opens) |
+| **Requires PC?** | No | Yes |
+| **Security** | Secrets in the cloud | Everything on your machine |
+
+---
+
 ## 🤖 AI Explanations
 
 GrindLog generates rich explanations for every solution using **Groq** (100% free, no billing risk).
@@ -206,6 +256,7 @@ Leetcode_Solutions-GrindLog-s/
 | **Git** | simple-git | Repository operations |
 | **CLI** | Commander.js | Command-line interface |
 | **CI/CD** | GitHub Actions | Code quality checks |
+| **Auto-Sync** | Windows Task Scheduler | Local 6-hour sync cycle |
 
 ---
 

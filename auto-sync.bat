@@ -1,3 +1,3 @@
 @echo off
-cd /d "C:\Users\gowda\OneDrive\Desktop\GrindLog's"
+cd /d "%~dp0"
 node src/auto-sync.js

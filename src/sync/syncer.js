@@ -198,9 +198,34 @@ async function syncNew(options = {}) {
     }
   }
 
-  // Update last sync timestamp
-  config.sync.lastSyncTimestamp = Math.floor(Date.now() / 1000);
-  await saveConfig(config);
+  // Update last sync timestamp using robust error-aware logic
+  if (errors.length === 0) {
+    config.sync.lastSyncTimestamp = Math.floor(Date.now() / 1000);
+    await saveConfig(config);
+  } else if (synced.length > 0) {
+    // Some succeeded, some failed. Update lastSyncTimestamp to the latest successful one,
+    // but no higher than the earliest failed one to ensure failed ones get retried.
+    const failedSlugs = new Set(errors.map(e => {
+      const parts = e.split(':');
+      return parts[0] ? parts[0].trim() : '';
+    }).filter(Boolean));
+
+    const failedSubs = problemList.filter(p => failedSlugs.has(p.title) || failedSlugs.has(p.titleSlug));
+    const earliestFailedTimestamp = failedSubs.length > 0
+      ? Math.min(...failedSubs.map(s => parseInt(s.timestamp, 10)))
+      : Infinity;
+
+    const successfulTimestamps = synced.map(s => s.timestamp);
+    const latestSuccessfulTimestamp = successfulTimestamps.length > 0
+      ? Math.max(...successfulTimestamps)
+      : 0;
+
+    const newTimestamp = Math.min(latestSuccessfulTimestamp, earliestFailedTimestamp - 1);
+    if (newTimestamp > lastSync) {
+      config.sync.lastSyncTimestamp = newTimestamp;
+      await saveConfig(config);
+    }
+  }
 
   // Summary
   Logger.blank();

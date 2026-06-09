@@ -126,7 +126,23 @@ class SessionManager {
           Cookie: `LEETCODE_SESSION=${data.session}; csrftoken=${data.csrfToken};`,
         },
         body: JSON.stringify({
-          query: `query { matchedUser(username: "${username}") { username profile { ranking } submitStatsGlobal { acSubmissionNum { difficulty count } } } }`,
+          query: `query {
+            user {
+              username
+            }
+            matchedUser(username: "${username}") {
+              username
+              profile {
+                ranking
+              }
+              submitStatsGlobal {
+                acSubmissionNum {
+                  difficulty
+                  count
+                }
+              }
+            }
+          }`,
         }),
       });
 
@@ -138,13 +154,22 @@ class SessionManager {
       }
 
       const json = await response.json();
-      const user = json.data?.matchedUser;
+      const currentUser = json.data?.user?.username;
+      const matchedUser = json.data?.matchedUser;
 
-      if (!user) {
-        return { valid: false, profile: null, error: 'User not found or session invalid' };
+      if (!currentUser) {
+        return { valid: false, profile: null, error: 'Session expired or invalid (user is not logged in)' };
       }
 
-      return { valid: true, profile: user, error: null };
+      if (currentUser.toLowerCase() !== username.toLowerCase()) {
+        return { valid: false, profile: null, error: `Session username (${currentUser}) does not match configured username (${username})` };
+      }
+
+      if (!matchedUser) {
+        return { valid: false, profile: null, error: 'User profile not found' };
+      }
+
+      return { valid: true, profile: matchedUser, error: null };
     } catch (err) {
       return { valid: false, profile: null, error: err.message };
     }

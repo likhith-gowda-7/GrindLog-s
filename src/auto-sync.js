@@ -11,8 +11,8 @@
  *
  * Usage with Task Scheduler:
  *   Program: node
- *   Arguments: "C:\Users\gowda\OneDrive\Desktop\GrindLog's\src\auto-sync.js"
- *   Start in: C:\Users\gowda\OneDrive\Desktop\GrindLog's
+ *   Arguments: "C:\path\to\GrindLog's\src\auto-sync.js"
+ *   Start in: C:\path\to\GrindLog's
  */
 
 import { loadConfig, getFullCredentials } from './utils/config.js';

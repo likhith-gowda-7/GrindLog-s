@@ -113,7 +113,7 @@ async function interactiveSessionRefresh() {
       await sleep(POLL_INTERVAL_MS);
 
       // Check if browser was closed by user
-      if (!browserInstance.isConnected()) {
+      if (!browserInstance.connected) {
         return { success: false, error: 'Browser was closed before authentication completed.' };
       }
 
@@ -139,7 +139,8 @@ async function interactiveSessionRefresh() {
     return { success: false, error: 'Authentication timed out after 5 minutes.' };
 
   } catch (err) {
-    if (browserInstance?.isConnected()) {
+    console.error('Interactive session refresh error details:', err);
+    if (browserInstance && browserInstance.connected) {
       await browserInstance.close().catch(() => {});
     }
     return { success: false, error: `Session refresh failed: ${err.message}` };

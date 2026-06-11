@@ -59,21 +59,20 @@ async function main() {
 
     log(`Session valid (~${sessionInfo.daysRemaining} days remaining)`);
 
-    // Run sync
+    // Run sync (downloads and commits new submissions locally)
     await syncNew({ push: false });
 
-    // Push to remote
+    // Always attempt to push any committed changes (new or previously pending) to remote
     const outputDir = config.github?.outputDir || './output';
     const absOutput = path.isAbsolute(outputDir) ? outputDir : path.join(PROJECT_ROOT, outputDir);
     const repo = new GitRepo(absOutput);
 
-    const status = await repo.getStatus();
-    if (!status.isClean) {
-      await repo.commit('🔄 Auto-sync LeetCode submissions');
+    const hasRemote = await repo.hasRemote();
+    if (hasRemote) {
       await repo.push('origin', 'main');
-      log(`SUCCESS: Synced and pushed (${status.created} new, ${status.modified} modified)`);
+      log('SUCCESS: Auto-sync completed and pushed to remote.');
     } else {
-      log('No new submissions to push.');
+      log('WARNING: No remote configured. Committed changes locally.');
     }
 
   } catch (err) {

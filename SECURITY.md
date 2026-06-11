@@ -165,7 +165,7 @@ GrindLog uses **Windows Task Scheduler** (not GitHub Actions) for automated sync
 If you discover a security vulnerability, please report it responsibly:
 
 1. **DO NOT** open a public issue
-2. Email: [gowdalikhith180@gmail.com](mailto:gowdalikhith180@gmail.com)
+2. Email: [gowdalikith180@gmail.com](mailto:gowdalikith180@gmail.com)
 3. Include: description, steps to reproduce, potential impact
 4. We will respond within 48 hours
 

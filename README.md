@@ -170,10 +170,14 @@ Task Scheduler (every 6h)
     ↓
 auto-sync.bat → node src/auto-sync.js
     ↓
-Check session → Fetch new submissions → Commit & Push
+Check session → Expired? → Open browser for re-login → Continue
+    ↓
+Fetch new submissions → Commit & Push
     ↓
 Results logged to sync.log
 ```
+
+> **Auto Session Refresh:** When the session expires, auto-sync will automatically open a browser window for you to log in — no need to manually run `grindlog auth`. This works because the task runs in Interactive mode (only when you're logged in).
 
 ### Setup (Automatic)
 

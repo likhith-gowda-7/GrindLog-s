@@ -52,9 +52,24 @@ async function main() {
     }
 
     if (sessionInfo.isLikelyExpired) {
-      log('WARNING: Session likely expired. Run `grindlog auth` to refresh.');
-      log('Skipping auto-sync (cannot open browser in background).');
-      process.exit(1);
+      log('WARNING: Session expired. Attempting interactive refresh...');
+
+      try {
+        const { interactiveSessionRefresh } = await import('./auth/session-refresh.js');
+        const result = await interactiveSessionRefresh();
+
+        if (result.success) {
+          log('Session refreshed successfully via browser.');
+        } else {
+          log(`ERROR: Session refresh failed: ${result.error}`);
+          log('Please run `grindlog auth` manually.');
+          process.exit(1);
+        }
+      } catch (refreshErr) {
+        log(`ERROR: Could not open browser for session refresh: ${refreshErr.message}`);
+        log('Please run `grindlog auth` manually.');
+        process.exit(1);
+      }
     }
 
     log(`Session valid (~${sessionInfo.daysRemaining} days remaining)`);

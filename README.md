@@ -7,7 +7,7 @@
 *Sync your LeetCode solutions to a beautifully structured GitHub repository — with encrypted authentication, AI explanations, and zero manual cookie copying.*
 
 ![Node.js](https://img.shields.io/badge/Node.js-20+-339933?style=for-the-badge&logo=node.js&logoColor=white)
-![LeetCode](https://img.shields.io/badge/LeetCode-737_Solved-FFA116?style=for-the-badge&logo=leetcode&logoColor=white)
+![LeetCode](https://img.shields.io/badge/LeetCode-758_Solved-FFA116?style=for-the-badge&logo=leetcode&logoColor=white)
 ![Groq](https://img.shields.io/badge/Groq-AI-FF6B35?style=for-the-badge&logo=groq&logoColor=white)
 ![Security](https://img.shields.io/badge/AES--256--GCM-Encrypted-00C853?style=for-the-badge&logo=letsencrypt&logoColor=white)
 
@@ -39,7 +39,7 @@ If you grind LeetCode, you know the pain:
 | 📁 **Smart Organization** | Problems organized by topic (Arrays, DP, Trees, etc.) |
 | 🧠 **AI Explanations** | Auto-generated intuition, approach, and complexity analysis |
 | 📊 **Beautiful READMEs** | Badges, stats, progress bars, and problem index |
-| 📥 **Bulk Import** | Import your entire LeetCode history (735+ problems) in one command |
+| 📥 **Bulk Import** | Import your entire LeetCode history (750+ problems) in one command |
 | 🩺 **Health Diagnostics** | `grindlog doctor` verifies your entire setup |
 | 🏷️ **Full Metrics** | Runtime, memory, percentiles, difficulty, tags |
 
@@ -95,8 +95,10 @@ node src/cli.js doctor
   ✓ Username: D_M_Likhith
   ✓ Session: Valid (~14 days remaining)
   ✓ Storage: Encrypted (AES-256-GCM)
-  ✓ LeetCode API: Connected (737 problems solved)
+  ✓ LeetCode API: Connected (758 problems solved)
   ✓ AI provider: groq (configured)
+  ✓ Output directory: ./output (5494 files)
+  ✓ Git repository: Initialized
   ✓ Browser: Microsoft Edge detected
 
   All checks passed! GrindLog is healthy. 🎉

@@ -97,10 +97,20 @@ async function interactiveSessionRefresh() {
 
     // Step 5: Navigate to login page
     Logger.info('Not logged in. Redirecting to login page...');
-    await page.goto(`${LEETCODE_URL}/accounts/login/`, {
-      waitUntil: 'networkidle2',
-      timeout: 30000,
-    });
+    try {
+      await page.goto(`${LEETCODE_URL}/accounts/login/`, {
+        waitUntil: 'networkidle2',
+        timeout: 30000,
+      });
+    } catch (navErr) {
+      // Cloudflare sometimes triggers ERR_ABORTED during redirects — this is normal
+      if (navErr.message.includes('ERR_ABORTED') || navErr.message.includes('net::')) {
+        Logger.info('Redirect detected (Cloudflare). Waiting for page to settle...');
+        await sleep(3000);
+      } else {
+        throw navErr;
+      }
+    }
 
     Logger.blank();
     Logger.info('🌐 Browser opened — waiting for you to log in...');

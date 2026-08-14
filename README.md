@@ -257,7 +257,7 @@ Leetcode_Solutions-GrindLog-s/
 | **Automation** | Puppeteer Core | Interactive Session Refresh |
 | **Security** | Node.js Crypto | AES-256-GCM encryption |
 | **API** | LeetCode GraphQL | Fetch submissions & problem data |
-| **AI** | Groq (Llama 3.1) | Solution explanations (free) |
+| **AI** | Groq (GPT OSS 20B) | Solution explanations (free) |
 | **Storage** | Encrypted local files | Session & key management |
 | **Git** | simple-git | Repository operations |
 | **CLI** | Commander.js | Command-line interface |

@@ -35,14 +35,15 @@ async function syncNew(options = {}) {
     csrfToken: creds.leetcode.csrfToken,
   });
 
-  // Test connection
-  const profile = await client.fetchProfile();
-  if (!profile) {
-    Logger.error('Failed to connect to LeetCode. Session may have expired.');
+  // Validate session is actually authenticated (not just checking public profile)
+  const { SessionManager } = await import('../auth/session-manager.js');
+  const validation = await SessionManager.validateSession(creds.leetcode.username);
+  if (!validation.valid) {
+    Logger.error(`Session invalid: ${validation.error}`);
     Logger.info('Run `grindlog auth` to refresh your session.');
     process.exit(1);
   }
-  Logger.success(`Connected as: ${profile.username}`);
+  Logger.success(`Connected as: ${validation.profile.username}`);
 
   // Fetch recent submissions
   const recentSubs = await client.fetchRecentSubmissions(50);

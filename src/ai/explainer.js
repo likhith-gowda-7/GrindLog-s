@@ -145,7 +145,7 @@ class Explainer {
 
   /**
    * Call Groq API (OpenAI-compatible, free tier, no billing).
-   * Uses Llama 3.1 8B for token-efficient code explanations on free tier.
+   * Uses GPT OSS 20B (MoE) for token-efficient code explanations on free tier.
    */
   async _callGroq(userPrompt, retryCount = 0) {
     await this._rateLimit(GROQ_RATE_LIMIT_MS);
@@ -157,7 +157,7 @@ class Explainer {
         Authorization: `Bearer ${this.groqApiKey}`,
       },
       body: JSON.stringify({
-        model: 'llama-3.1-8b-instant',
+        model: 'openai/gpt-oss-20b',
         messages: [
           { role: 'system', content: getSystemPrompt() },
           { role: 'user', content: userPrompt },

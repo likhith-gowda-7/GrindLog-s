@@ -42,7 +42,7 @@ async function main() {
   log('=== GrindLog Auto-Sync Started ===');
 
   try {
-    // Check session validity first
+    // Check session validity — first by timestamp, then by API
     const config = await loadConfig();
     const sessionInfo = SessionManager.getSessionInfo();
 
@@ -51,8 +51,18 @@ async function main() {
       process.exit(1);
     }
 
-    if (sessionInfo.isLikelyExpired) {
-      log('WARNING: Session expired. Attempting interactive refresh...');
+    // Validate session against the API (catches early invalidation)
+    let sessionValid = false;
+    if (!sessionInfo.isLikelyExpired) {
+      const validation = await SessionManager.validateSession(config.leetcode?.username);
+      sessionValid = validation.valid;
+      if (!sessionValid) {
+        log(`WARNING: Session rejected by API: ${validation.error}`);
+      }
+    }
+
+    if (!sessionValid) {
+      log('WARNING: Session expired or invalid. Attempting interactive refresh...');
 
       try {
         const { interactiveSessionRefresh } = await import('./auth/session-refresh.js');
@@ -70,9 +80,9 @@ async function main() {
         log('Please run `grindlog auth` manually.');
         process.exit(1);
       }
+    } else {
+      log(`Session valid (~${sessionInfo.daysRemaining} days remaining)`);
     }
-
-    log(`Session valid (~${sessionInfo.daysRemaining} days remaining)`);
 
     // Run sync (downloads and commits new submissions locally)
     await syncNew({ push: false });

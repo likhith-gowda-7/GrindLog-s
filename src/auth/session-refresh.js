@@ -66,6 +66,7 @@ async function interactiveSessionRefresh() {
       headless: false,
       defaultViewport: null,
       args: [
+        '--new-window',
         '--no-first-run',
         '--no-default-browser-check',
         '--disable-blink-features=AutomationControlled',
@@ -166,7 +167,7 @@ async function interactiveSessionRefresh() {
  */
 async function extractSessionCookies(page) {
   try {
-    const cookies = await page.cookies('https://leetcode.com');
+    const cookies = await page.cookies();
 
     const sessionCookie = cookies.find(c => c.name === 'LEETCODE_SESSION');
     const csrfCookie = cookies.find(c => c.name === 'csrftoken');
